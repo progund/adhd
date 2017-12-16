@@ -6,6 +6,12 @@
 
 Licensed under [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
+# Disclaimer
+
+This software comes with no warranty.
+
+We applogise of we offend anyone with the name. We think it's funny.
+
 # Using
 
 Usage (from the script itself):
@@ -81,6 +87,18 @@ EXAMPLES
 
 ADHD can download serialized files from the Android devices. We have
 only tested copying serialized files as created by [ObjectCache](https://github.com/progund/java-extra-lectures/tree/master/caching) which is also developed by your not so very humble idiots at [juneday](http://wiki.juneday.se).
+
+## SQLite
+
+You need to have [SQLite](https://www.sqlite.org/) (version 3) installed. Ok, you download the SQLite database files from your Android device. No problems. But if you want them converted into txt and html we suggest you install and make sure sqlite3 can be found using your PATH variable.
+
+## ADB - Android Debugger Bridge
+
+We rely totally on (adb)[https://developer.android.com/studio/command-line/adb.html]. Install it now.
+
+## Misc other softwares
+
+* bash - check out our [wiki pages](http://wiki.juneday.se/mediawiki/index.php/Bash) for more information on that. Once you've followed the instructions there you have tools such as sed, awk and grep which are needed. If you have no idea what we're talking about, you really (yes, REALLY!) need to check bash and its friends out. We suggest you attend the course: [Bash introduction](http://wiki.juneday.se/mediawiki/index.php/Bash-introduction) and [Bash programming](http://wiki.juneday.se/mediawiki/index.php/Bash_Programming). 
 
 # Software that uses ADHD
 
