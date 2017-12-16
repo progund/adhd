@@ -10,7 +10,7 @@ Licensed under [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
 # Software that uses ADHD
 
-We, the idiots at [juneday](http://wiki.juneday.se), use ADHD in our courses:
+We, the idiots at [juneday](http://wiki.juneday.se), use ADHD in some of our courses:
 * Android: [Android the practical way](http://wiki.juneday.se/mediawiki/index.php/Android_-_the_practical_way)
 * Java:  [Programming with Java](http://wiki.juneday.se/mediawiki/index.php/Programming_with_Java) and [More programming with Java](http://wiki.juneday.se/mediawiki/index.php/More_programming_with_Java)
 * Misc: [Extra Lectures](http://wiki.juneday.se/mediawiki/index.php/Misc:Extra_lectures)
