@@ -75,6 +75,13 @@ EXAMPLES
       downloads all files with serialized data for se.juneday.systemet on devce emulator-5554
 ```
 
+# Requirements
+
+## ObjectCache
+
+ADHD can download serialized files from the Android devices. We have
+only tested copying serialized files as created by [ObjectCache](https://github.com/progund/java-extra-lectures/tree/master/caching) which is also developed by your not so very humble idiots at [juneday](http://wiki.juneday.se).
+
 # Software that uses ADHD
 
 We, the idiots at [juneday](http://wiki.juneday.se), use ADHD in some of our courses:
