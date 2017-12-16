@@ -6,7 +6,50 @@
 
 Licensed under [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-# Description
+# Using
+
+Usage (from the script itself):
+```
+NAME
+    - android development helper
+
+SYNOPSIS
+    [OPTION]
+
+DESCRIPTION
+    assists you with:
+      Download files:
+      * databases from an emulated device (or rooted physical device)
+      * serialized files (using Juneday's ObjectCache)
+      Manage (and visualise) downloaded files:
+      * databases are presented in HTML
+LOG
+    logs to file /home/hesa/.adhd.log
+
+OPTIONS
+   --restart - restarts the adb daemon
+   --list-devices,-ld        - lists available devices
+   --device                  - specifies what device to manage
+                                (if only one device is available this will be chosen)
+   --list-database-apps,-lda - lists only apps (on the device) with a database
+   --list-apps,-la           - lists all apps (on the device)
+   --app [APP]               - sets program to manage
+   --adb [PROG]              - sets adb program to use
+   --help,-h                 - prints this help text
+
+RETURN VALUES
+     0 - success
+     2 - failure
+     3 - adb could not be found
+    10 - no mode set
+    11 - no app set
+
+EXAMPLES
+    -lda 
+      lists all apps with one (or more) databases available
+    --app com.android.providers.contacts 
+      downloads all databases associated with com.android.providers.contacts
+```
 
 # Software that uses ADHD
 
