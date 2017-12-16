@@ -11,20 +11,20 @@ Licensed under [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 Usage (from the script itself):
 ```
 NAME
-    - android development helper
+   adhd.sh - android development helper doctor
 
 SYNOPSIS
-    [OPTION]
+   adhd.sh [OPTION] APP MODE
 
 DESCRIPTION
-    assists you with:
+   adhd.sh assists you with:
       Download files:
       * databases from an emulated device (or rooted physical device)
       * serialized files (using Juneday's ObjectCache)
       Manage (and visualise) downloaded files:
       * databases are presented in HTML
 LOG
-    logs to file /home/hesa/.adhd.log
+   adhd.sh logs to file $LOG_FILE (currently set to /home/hesa/.adhd.log)
 
 OPTIONS
    --restart - restarts the adb daemon
@@ -32,23 +32,45 @@ OPTIONS
    --device                  - specifies what device to manage
                                 (if only one device is available this will be chosen)
    --list-database-apps,-lda - lists only apps (on the device) with a database
+   --list-serialized-apps,-lsa - list only apps (on the device) with serialized files
    --list-apps,-la           - lists all apps (on the device)
-   --app [APP]               - sets program to manage
    --adb [PROG]              - sets adb program to use
    --help,-h                 - prints this help text
 
+APP
+   the program to manage
+
+MODE
+   serializable - downloads files as serialized by ObjectCache*
+   database - downloads database files and creates txt file and html pages from each
+
+ENVIRONMENT VARIABLES
+   APP - the Android app to manage
+   MODE - database, serialized, ...  
+   ADB - Android debugger bridge tool
+   ADEV - Android device to manage
+
 RETURN VALUES
-     0 - success
-     2 - failure
-     3 - adb could not be found
-    10 - no mode set
-    11 - no app set
+    0 - success
+    2 - failure
+    3 - adb could not be found
+   10 - no mode set
+   11 - no app set
 
 EXAMPLES
-    -lda 
+
+   adhd.sh -lda 
       lists all apps with one (or more) databases available
-    --app com.android.providers.contacts 
+
+   adhd.sh -ld 
+      lists all devices available
+
+   adhd.sh  com.android.providers.contacts database
       downloads all databases associated with com.android.providers.contacts
+
+   adhd.sh  se.juneday.systemet serialized
+      downloads all files with serialized data for se.juneday.systemet
+
 ```
 
 # Software that uses ADHD
