@@ -71,6 +71,8 @@ EXAMPLES
    adhd.sh  se.juneday.systemet serialized
       downloads all files with serialized data for se.juneday.systemet
 
+   adhd.sh  --device emulator-5554 se.juneday.systemet serialized
+      downloads all files with serialized data for se.juneday.systemet on devce emulator-5554
 ```
 
 # Software that uses ADHD
