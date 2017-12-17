@@ -176,7 +176,7 @@ usage()
     echo "   --classpath, -cp   - CLASSPATH for Java programs"
     echo 
     echo "APP"
-    echo "   the program to manage"
+    echo "   the program (on the Android Device) to manage"
     echo 
     echo "MODE"
     echo "   serializable - downloads files as serialized by ObjectCache and generates TXT files*"
