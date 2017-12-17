@@ -152,11 +152,12 @@ usage()
     echo 
     echo "DESCRIPTION"
     echo "   $SHELL_NAME assists you with:"
-    echo "      Download files:"
+    echo "      Download and reads out information from files on an Android Device:"
     echo "      * databases from an emulated device (or rooted physical device)"
     echo "      * serialized files (using Juneday's ObjectCache)"
     echo "      Manage (and visualise) downloaded files:"
-    echo "      * databases are presented in HTML"
+    echo "      * databases are presented in HTML and TXT"
+    echo "      * serialized are presented in TXT"
     echo "LOG"
     echo "   $SHELL_NAME logs to file "'$LOG_FILE' "(currently set to $LOG_FILE)"
     echo 
@@ -178,8 +179,8 @@ usage()
     echo "   the program to manage"
     echo 
     echo "MODE"
-    echo "   serializable - downloads files as serialized by ObjectCache*"
-    echo "   database - downloads database files and creates txt file and html pages from each"
+    echo "   serializable - downloads files as serialized by ObjectCache and generates TXT files*"
+    echo "   database - downloads database files and creates TXT file and HTML pages from each"
     echo "   all - all of the above"
     echo 
     echo "ENVIRONMENT VARIABLES"
@@ -207,13 +208,13 @@ usage()
     echo "      lists all devices available"
     echo
     echo "   $SHELL_NAME  com.android.providers.contacts database"
-    echo "      downloads all databases associated with com.android.providers.contacts"
+    echo "      downloads all databases associated with com.android.providers.contacts and creates TXT/HTML"
     echo 
     echo "   $SHELL_NAME  se.juneday.systemet serialized"
-    echo "      downloads all files with serialized data for se.juneday.systemet"
+    echo "      downloads all files with serialized data for se.juneday.systemet and creates TXT"
     echo
     echo "   $SHELL_NAME  --device emulator-5554 se.juneday.systemet serialized"
-    echo "      downloads all files with serialized data for se.juneday.systemet on devce emulator-5554"
+    echo "      downloads all files with serialized data for se.juneday.systemet on devce emulator-5554 and creates TXT"
     echo
     echo "   $SHELL_NAME  -ocd ~/opt/ObjectCache --device emulator-5554 se.juneday.systemet serialized"
     echo "      as above but using ObjectCache as found in dir ~/opt/ObjectCache"
