@@ -24,11 +24,12 @@ SYNOPSIS
 
 DESCRIPTION
    adhd.sh assists you with:
-      Download files:
+      Download and reads out information from files on an Android Device:
       * databases from an emulated device (or rooted physical device)
       * serialized files (using Juneday's ObjectCache)
       Manage (and visualise) downloaded files:
-      * databases are presented in HTML
+      * databases are presented in HTML and TXT
+      * serialized are presented in TXT
 LOG
    adhd.sh logs to file $LOG_FILE (currently set to /home/hesa/.adhd.log)
 
@@ -42,24 +43,31 @@ OPTIONS
    --list-apps,-la           - lists all apps (on the device)
    --adb [PROG]              - sets adb program to use
    --help,-h                 - prints this help text
+   --verify-software, -vs    - verify required softwares
+   --objectcache-dir, -ocd   - path to ObjectCache classes
+   --classpath, -cp   - CLASSPATH for Java programs
 
 APP
    the program to manage
 
 MODE
-   serializable - downloads files as serialized by ObjectCache*
-   database - downloads database files and creates txt file and html pages from each
+   serializable - downloads files as serialized by ObjectCache and generates TXT files*
+   database - downloads database files and creates TXT file and HTML pages from each
+   all - all of the above
 
 ENVIRONMENT VARIABLES
    APP - the Android app to manage
    MODE - database, serialized, ...  
    ADB - Android debugger bridge tool
    ADEV - Android device to manage
+   OC_PATH - ObjectCache directory
+   CLASSPATH - CLASSPATH for java programs
 
 RETURN VALUES
     0 - success
     2 - failure
     3 - adb could not be found
+    4 - slite and/or ObjectCache could not be found
    10 - no mode set
    11 - no app set
 
@@ -72,13 +80,20 @@ EXAMPLES
       lists all devices available
 
    adhd.sh  com.android.providers.contacts database
-      downloads all databases associated with com.android.providers.contacts
+      downloads all databases associated with com.android.providers.contacts and creates TXT/HTML
 
    adhd.sh  se.juneday.systemet serialized
-      downloads all files with serialized data for se.juneday.systemet
+      downloads all files with serialized data for se.juneday.systemet and creates TXT
 
    adhd.sh  --device emulator-5554 se.juneday.systemet serialized
-      downloads all files with serialized data for se.juneday.systemet on devce emulator-5554
+      downloads all files with serialized data for se.juneday.systemet on devce emulator-5554 and creates TXT
+
+   adhd.sh  -ocd ~/opt/ObjectCache --device emulator-5554 se.juneday.systemet serialized
+      as above but using ObjectCache as found in dir ~/opt/ObjectCache
+
+   adhd.sh  -ocd ~/opt/ObjectCache -cp ~/AndroidStudioProjects/BlaBlaBla --device emulator-5554 se.juneday.systemet serialized
+      as above but setting CLASSPATH to ~/AndroidStudioProjects/BlaBlaBla to find your own classes
+
 ```
 
 # Requirements
