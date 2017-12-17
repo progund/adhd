@@ -26,6 +26,8 @@ LOG_FILE=~/.adhd.log
 
 verify_sw()
 {
+    RET=0
+    echo -n "Verifying adb: "
     # Check adb
     $ADB help >/dev/null 2>&1
     if [ $? -ne 0 ]
@@ -34,25 +36,37 @@ verify_sw()
         echo "adb not found, tried $ADB"
         exit 3
     fi
-
+    echo "OK"
+    
+    echo -n "Verifying SQLite: "
     # Check SQLite
     echo ".quit" | $SQLITE  >/dev/null 2>&1
     if [ $? -ne 0 ]
     then
         echo "*** WARNING ***"
         echo "$SQLITE not found. You will not be able to read databases"
+        RET=4
+    else
+        echo "OK"
     fi
 
+    echo -n "Verifying ObjectCache: "
     # Check ObjectCache
     CMD="java -cp $OC_PATH:$CLASSPATH se.juneday.ObjectCacheReader --test"
-    echo $CMD
+ #   echo $CMD
     $CMD
     if [ $? -ne 0 ]
     then
         echo "*** WARNING ***"
         echo "ObjectCache not found. You will not be able to read Serialized files"
+        echo "To set the path to the ObjectCache dir, do something like the below:"
+        echo "bin/adhd.sh -ocd ~/opt/ObjectCache --verify-software"
+        RET=4
+    else
+        echo "OK"
     fi
 
+    return $RET
 }
 
 adbw()
@@ -180,6 +194,7 @@ usage()
     echo "    0 - success"
     echo "    2 - failure"
     echo "    3 - adb could not be found"
+    echo "    4 - slite and/or ObjectCache could not be found"
     echo "   10 - no mode set"
     echo "   11 - no app set"
     echo
@@ -199,6 +214,12 @@ usage()
     echo
     echo "   $SHELL_NAME  --device emulator-5554 se.juneday.systemet serialized"
     echo "      downloads all files with serialized data for se.juneday.systemet on devce emulator-5554"
+    echo
+    echo "   $SHELL_NAME  -ocd ~/opt/ObjectCache --device emulator-5554 se.juneday.systemet serialized"
+    echo "      as above but using ObjectCache as found in dir ~/opt/ObjectCache"
+    echo
+    echo "   $SHELL_NAME  -ocd ~/opt/ObjectCache -cp ~/AndroidStudioProjects/BlaBlaBla --device emulator-5554 se.juneday.systemet serialized"
+    echo "      as above but setting CLASSPATH to ~/AndroidStudioProjects/BlaBlaBla to find your own classes"
     echo
 
 }
@@ -283,7 +304,8 @@ do
             ;;
         "--verify-software"|"-vs")
             verify_sw
-            exit 0
+            RET=$?
+            exit $RET
             ;;
         "--objectcache-dir"|"-ocd")
             OC_PATH=$2
