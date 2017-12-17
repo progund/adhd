@@ -101,7 +101,7 @@ EXAMPLES
 ## ObjectCache
 
 ADHD can download serialized files from the Android devices. We have
-only tested copying serialized files as created by [ObjectCache](https://github.com/progund/java-extra-lectures/tree/master/caching) which is also developed by your not so very humble idiots at (juneday)[http://wiki.juneday.se].
+only tested copying serialized files as created by [ObjectCache](https://github.com/progund/java-extra-lectures/tree/master/caching) which is also developed by your not so very humble idiots at [juneday](http://wiki.juneday.se].
 
 ## SQLite
 
@@ -109,7 +109,7 @@ You need to have [SQLite](https://www.sqlite.org/) (version 3) installed. Ok, yo
 
 ## ADB - Android Debugger Bridge
 
-We rely totally on (adb)[https://developer.android.com/studio/command-line/adb.html]. Install it now.
+We rely totally on [adb](https://developer.android.com/studio/command-line/adb.html). Install it now.
 
 ## Misc other softwares
 
