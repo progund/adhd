@@ -48,7 +48,7 @@ OPTIONS
    --classpath, -cp   - CLASSPATH for Java programs
 
 APP
-   the program to manage
+   the program (on the Android Device) to manage
 
 MODE
    serializable - downloads files as serialized by ObjectCache and generates TXT files*
