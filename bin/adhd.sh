@@ -22,17 +22,37 @@ then
 fi
 LOG_FILE=~/.adhd.log
 
-verify_adb()
+
+
+verify_sw()
 {
-    ${ADB_PATH}/$ADB help >/dev/null 2>&1
+    # Check adb
+    $ADB help >/dev/null 2>&1
     if [ $? -ne 0 ]
     then
         echo "*** ERROR ***"
-        echo "adb not found, tried ${ADB_PATH}/$ADB"
-        echo "    ADB_PATH:${ADB_PATH}"
-        echo "    ADB:     ${ADB}"
+        echo "adb not found, tried $ADB"
         exit 3
     fi
+
+    # Check SQLite
+    echo ".quit" | $SQLITE  >/dev/null 2>&1
+    if [ $? -ne 0 ]
+    then
+        echo "*** WARNING ***"
+        echo "$SQLITE not found. You will not be able to read databases"
+    fi
+
+    # Check ObjectCache
+    CMD="java -cp $OC_PATH:$CLASSPATH se.juneday.ObjectCacheReader --test"
+    echo $CMD
+    $CMD
+    if [ $? -ne 0 ]
+    then
+        echo "*** WARNING ***"
+        echo "ObjectCache not found. You will not be able to read Serialized files"
+    fi
+
 }
 
 adbw()
@@ -54,6 +74,7 @@ PROGRAM_SUITE=adhd
 SHELL_NAME=adhd.sh
 CLIARGS=$*
 ADBW=adbw
+SQLITE=sqlite3
 
 log()
 {
@@ -91,6 +112,22 @@ exit_if_error()
     fi
 }
 
+warn_if_error()
+{
+    RET=$1
+    CMD=$2
+    MSG=$3
+
+    if [ "$RET" != "0" ]
+    then
+        loge "*** WARNING ***"
+        loge "Return value: $RET"
+        loge "$CMD"
+        loge "$MSG"
+        loge
+    fi
+}
+
 usage()
 {
     echo "NAME"
@@ -119,6 +156,9 @@ usage()
     echo "   --list-apps,-la           - lists all apps (on the device)"
     echo "   --adb [PROG]              - sets adb program to use"
     echo "   --help,-h                 - prints this help text"
+    echo "   --verify-software, -vs    - verify required softwares"
+    echo "   --objectcache-dir, -ocd   - path to ObjectCache classes"
+    echo "   --classpath, -cp   - CLASSPATH for Java programs"
     echo 
     echo "APP"
     echo "   the program to manage"
@@ -126,12 +166,15 @@ usage()
     echo "MODE"
     echo "   serializable - downloads files as serialized by ObjectCache*"
     echo "   database - downloads database files and creates txt file and html pages from each"
+    echo "   all - all of the above"
     echo 
     echo "ENVIRONMENT VARIABLES"
     echo "   APP - the Android app to manage"
     echo "   MODE - database, serialized, ...  "
     echo "   ADB - Android debugger bridge tool"
     echo "   ADEV - Android device to manage"
+    echo "   OC_PATH - ObjectCache directory"
+    echo "   CLASSPATH - CLASSPATH for java programs"
     echo
     echo "RETURN VALUES"
     echo "    0 - success"
@@ -192,7 +235,6 @@ list_apps()
 
 
 
-verify_adb
 while [ "$*" != "" ]
 do    
 #    echo "ARG: $1 | $*  [ $APP | $ADEV ]"
@@ -239,12 +281,28 @@ do
             usage
             exit 
             ;;
+        "--verify-software"|"-vs")
+            verify_sw
+            exit 0
+            ;;
+        "--objectcache-dir"|"-ocd")
+            OC_PATH=$2
+            shift
+            ;;
+        "--classpath"|"-cp")
+            CLASSPATH=$2
+            shift
+            ;;
         "database")
             MODE=database
             log "MODE set to $MODE"
             ;;
         "serialized")
             MODE=serialized
+            log "MODE set to $MODE"
+            ;;
+        "both")
+            MODE=both
             log "MODE set to $MODE"
             ;;
         *)
@@ -297,6 +355,25 @@ move_file()
     mv ${TO_MOVE} $DEST_DIR >> $LOG_FILE 2>&1
     exit_if_error $? "mv ${TO_MODE} $DEST_DIR" "Failed moving file to $DEST_DIR"
     echo "OK"
+}
+
+read_serialized()
+{
+    echo
+    echo "Converting serialized files to txt files"
+    echo "========================================================"
+    CMD="java -cp $OC_PATH:$CLASSPATH se.juneday.ObjectCacheReader "
+    for ser in $(find adhd/apps/$APP -name "*serialized.data" | sed 's,_serialized.data,,g')
+    do
+        echo -n " * creating ${ser}.txt: "
+        $CMD $ser > ${ser}.txt
+        if [ $? -eq 0 ]
+        then
+            echo "OK"
+        else
+            echo "FAILURE"
+        fi
+    done    
 }
 
 download_serialized()
@@ -402,6 +479,17 @@ case $MODE in
         log "Download serialized file"
         check_app
         download_serialized
+        read_serialized
+        ;;
+    "both")
+        log "Download db"
+        check_app
+        download_db
+        read_db
+        log "Download serialized file"
+        check_app
+        download_serialized
+        read_serialized
         ;;
     *)
         log "no mode set, bailing out"
