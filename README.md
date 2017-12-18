@@ -101,7 +101,7 @@ EXAMPLES
 ## ObjectCache
 
 ADHD can download serialized files from the Android devices. We have
-only tested copying serialized files as created by [ObjectCache](https://github.com/progund/java-extra-lectures/tree/master/caching) which is also developed by your not so very humble idiots at (juneday)[http://wiki.juneday.se].
+only tested copying serialized files as created by [ObjectCache](https://github.com/progund/java-extra-lectures/tree/master/caching) which is also developed by your not so very humble idiots at [juneday](http://wiki.juneday.se).
 
 ## SQLite
 
