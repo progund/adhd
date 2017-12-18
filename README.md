@@ -26,7 +26,7 @@ DESCRIPTION
    adhd.sh assists you with:
       Download and reads out information from files on an Android Device:
       * databases from an emulated device (or rooted physical device)
-      * serialized files (using [ObjectCache](https://github.com/progund/java-extra-lectures/tree/master/caching) by [juneday.se](http://wiki.juneday.se))
+      * serialized files (using juneday's ObjectCache)
       Manage (and visualise) downloaded files:
       * databases are presented in HTML and TXT
       * serialized are presented in TXT
