@@ -26,7 +26,7 @@ DESCRIPTION
    adhd.sh assists you with:
       Download and reads out information from files on an Android Device:
       * databases from an emulated device (or rooted physical device)
-      * serialized files (using Juneday's ObjectCache)
+      * serialized files (using [ObjectCache](https://github.com/progund/java-extra-lectures/tree/master/caching) by [juneday.se](http://wiki.juneday.se))
       Manage (and visualise) downloaded files:
       * databases are presented in HTML and TXT
       * serialized are presented in TXT
@@ -101,7 +101,7 @@ EXAMPLES
 ## ObjectCache
 
 ADHD can download serialized files from the Android devices. We have
-only tested copying serialized files as created by [ObjectCache](https://github.com/progund/java-extra-lectures/tree/master/caching) which is also developed by your not so very humble idiots at [juneday](http://wiki.juneday.se).
+only tested copying serialized files as created by [ObjectCache](https://github.com/progund/java-extra-lectures/tree/master/caching) which is also developed by your not so very humble idiots at [juneday.se](http://wiki.juneday.se).
 
 ## SQLite
 
@@ -117,7 +117,7 @@ We rely totally on [adb](https://developer.android.com/studio/command-line/adb.h
 
 # Software that uses ADHD
 
-We, the idiots at [juneday](http://wiki.juneday.se), use ADHD in some of our courses:
+We, the idiots at [juneday.se](http://wiki.juneday.se), use ADHD in some of our courses:
 * Android: [Android the practical way](http://wiki.juneday.se/mediawiki/index.php/Android_-_the_practical_way)
 * Java:  [Programming with Java](http://wiki.juneday.se/mediawiki/index.php/Programming_with_Java) and [More programming with Java](http://wiki.juneday.se/mediawiki/index.php/More_programming_with_Java)
 * Misc: [Extra Lectures](http://wiki.juneday.se/mediawiki/index.php/Misc:Extra_lectures)
