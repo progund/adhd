@@ -23,6 +23,8 @@ fi
 LOG_FILE=~/.adhd.log
 
 
+# Use ADB to find path to emulator
+EMU=$(dirname $ADB)/../emulator/emulator
 
 verify_sw()
 {
@@ -38,29 +40,47 @@ verify_sw()
     fi
     echo "OK"
     
+    echo
     echo -n "Verifying SQLite: "
     # Check SQLite
     echo ".quit" | $SQLITE  >/dev/null 2>&1
     if [ $? -ne 0 ]
     then
+        echo 
         echo "*** WARNING ***"
         echo "$SQLITE not found. You will not be able to read databases"
+        echo 
         RET=4
     else
         echo "OK"
     fi
 
+    echo
     echo -n "Verifying ObjectCache: "
     # Check ObjectCache
     CMD="java -cp $OC_PATH:$CLASSPATH se.juneday.ObjectCacheReader --test"
  #   echo $CMD
-    $CMD
+    $CMD 2>/dev/null >/dev/null
     if [ $? -ne 0 ]
     then
+        echo 
         echo "*** WARNING ***"
         echo "ObjectCache not found. You will not be able to read Serialized files"
         echo "To set the path to the ObjectCache dir, do something like the below:"
         echo "bin/adhd.sh -ocd ~/opt/ObjectCache --verify-software"
+        echo 
+        RET=4
+    else
+        echo "OK"
+    fi
+
+    echo
+    echo -n "Verifying Emulator: "
+ 
+    if [ ! -x $EMU ]
+    then
+        echo "*** WARNING ***"
+        echo "Emulator not found. You will not be able to start and stop AVDs."
         RET=4
     else
         echo "OK"
@@ -162,18 +182,19 @@ usage()
     echo "   $SHELL_NAME logs to file "'$LOG_FILE' "(currently set to $LOG_FILE)"
     echo 
     echo "OPTIONS"
-    echo "   --restart - restarts the adb daemon"
-    echo "   --list-devices,-ld        - lists available devices"
-    echo "   --device                  - specifies what device to manage"
-    echo "                                (if only one device is available this will be chosen)"
-    echo "   --list-database-apps,-lda - lists only apps (on the device) with a database"
+    echo "   --restart-daemon            - restarts the adb daemon and exits"
+    echo "   --list-devices,-ld          - lists running devices"
+    echo "   --list-available-devices, -lad - lists available devices"
+    echo "   --device                    - specifies what device to manage"
+    echo "                                 (if only one device is available this will be chosen)"
+    echo "   --list-database-apps,-lda   - lists only apps (on the device) with a database"
     echo "   --list-serialized-apps,-lsa - list only apps (on the device) with serialized files"
-    echo "   --list-apps,-la           - lists all apps (on the device)"
-    echo "   --adb [PROG]              - sets adb program to use"
-    echo "   --help,-h                 - prints this help text"
-    echo "   --verify-software, -vs    - verify required softwares"
-    echo "   --objectcache-dir, -ocd   - path to ObjectCache classes"
-    echo "   --classpath, -cp   - CLASSPATH for Java programs"
+    echo "   --list-apps,-la             - lists all apps (on the device)"
+    echo "   --adb PROG                  - sets adb program to PROG"
+    echo "   --help,-h                   - prints this help text"
+    echo "   --verify-software, -vs      - verify required softwares"
+    echo "   --objectcache-dir, -ocd     - path to ObjectCache classes"
+    echo "   --classpath, -cp            - CLASSPATH for Java programs"
     echo 
     echo "APP"
     echo "   the program (on the Android Device) to manage"
@@ -261,11 +282,28 @@ while [ "$*" != "" ]
 do    
 #    echo "ARG: $1 | $*  [ $APP | $ADEV ]"
     case "$1" in
-        "--restart")
+        "--restart-daemon"|"-rd")
             log "restarting"
             ${ADBW} kill-server >> $LOG_FILE 2>&1
             sleep 2
             ${ADBW} start-server >> $LOG_FILE 2>&1
+            exit
+            ;;
+        "--list-available-devices"|"-lad")
+            log "listing available devices"
+#            for d in $(ls -1 ~/.android/avd/*.ini)
+ #           do
+  #              echo -n " * "
+   #             basename $d | sed 's,\.ini,,'g
+            #        done
+            $EMU -list-avds
+            exit
+            ;;
+        "--start-device"|"-sd")
+            log "Startting device"
+            ADEV=$2
+            $EMU -avd $ADEV 2>>$LOG_FILE >>$LOG_FILE &
+            shift
             exit
             ;;
         "--list-devices"|"-ld")
