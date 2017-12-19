@@ -189,6 +189,7 @@ usage()
     echo "                                 (if only one device is available this will be chosen)"
     echo "   --list-database-apps,-lda   - lists only apps (on the device) with a database"
     echo "   --list-serialized-apps,-lsa - list only apps (on the device) with serialized files"
+#    echo "   -lsd                        - list only apps (on the device) with serialized files AND databases"
     echo "   --list-apps,-la             - lists all apps (on the device)"
     echo "   --adb PROG                  - sets adb program to PROG"
     echo "   --help,-h                   - prints this help text"
