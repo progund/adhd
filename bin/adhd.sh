@@ -55,6 +55,7 @@ verify_sw()
         echo "OK"
     fi
 
+    setup_oc
     echo
     echo -n "Verifying ObjectCache: "
     # Check ObjectCache
@@ -189,7 +190,7 @@ usage()
     echo "                                 (if only one device is available this will be chosen)"
     echo "   --list-database-apps,-lda   - lists only apps (on the device) with a database"
     echo "   --list-serialized-apps,-lsa - list only apps (on the device) with serialized files"
-#    echo "   -lsd                        - list only apps (on the device) with serialized files AND databases"
+    echo "   -lsd                        - list only apps (on the device) with serialized files AND databases"
     echo "   --list-apps,-la             - lists all apps (on the device)"
     echo "   --adb PROG                  - sets adb program to PROG"
     echo "   --help,-h                   - prints this help text"
@@ -250,11 +251,12 @@ usage()
 list_apps()
 {
     echo " *** AVAILABLE APPS  ***"
-    ALL_APPS=$(${ADBW} shell "$SHELL_SU_CMD ls /data/data") 2>> $LOG_FILE 
+    ALL_APPS=$(${ADBW} shell "$SHELL_SU_CMD ls /data/data/") 2>> $LOG_FILE 
     exit_if_error $? "${ADBW} shell $SHELL_SU_CMD ls /data/data" "Failed listing apps on device"
 
     for dir in $ALL_APPS
     do
+        
         if [ "$1" = "--only-database" ]
         then
             ${ADBW} shell "$SHELL_SU_CMD ls  /data/data/${dir}/databases" >> $LOG_FILE 2>&1
@@ -265,7 +267,8 @@ list_apps()
             fi
         elif [ "$1" = "--only-serialized" ]
         then
-            ${ADBW} shell "$SHELL_SU_CMD ls  /data/data/${dir}/|grep _serializsed" >> $LOG_FILE 2>&1
+            ${ADBW} shell "$SHELL_SU_CMD ls /data/data/${dir}/|grep _serialized" >> $LOG_FILE 2>&1
+            
             RET=$?
             if [ $RET -eq 0 ]
             then
@@ -277,6 +280,19 @@ list_apps()
     done
 }
 
+
+setup_oc() {
+    if [ ! -f se/juneday/ObjectCacheReader.class ]
+    then
+        mkdir -p se/juneday/
+        curl -o se/juneday/ObjectCacheReader.java https://raw.githubusercontent.com/progund/java-extra-lectures/master/caching/se/juneday/ObjectCacheReader.java
+        curl -o se/juneday/ObjectCache.java https://raw.githubusercontent.com/progund/java-extra-lectures/master/caching/se/juneday/ObjectCache.java
+        exit_if_error $? "Failed to download ObjectCache"
+
+        javac se/juneday/ObjectCacheReader.java
+        exit_if_error $? "Failed to compile ObjectCache"
+    fi
+}
 
 
 while [ "$*" != "" ]
@@ -421,6 +437,7 @@ move_file()
 
 read_serialized()
 {
+    setup_oc
     echo
     echo "Converting serialized files to txt files"
     echo "========================================================"
