@@ -24,7 +24,7 @@ SYNOPSIS
 
 DESCRIPTION
    adhd.sh assists you with:
-      Download and reads out information from files on an Android Device:
+      Download and extract information from files on an Android Device:
       * databases from an emulated device (or rooted physical device)
       * serialized files (using juneday's ObjectCache)
       Manage (and visualise) downloaded files:
