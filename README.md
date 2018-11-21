@@ -97,7 +97,7 @@ You should now have the database itself, a text version of the content of the da
 
 Let's assume you want to download and convert serialized files from an app called ```se.juneday.gitrepoviewer```
 * Retrieve and convert serialized files
-```adhd.sh -ocd ~/AndroidStudioProject/GitRepoViewer/app/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/  se.juneday.gitrepoviewer serialized
+```adhd.sh -ocd ~/AndroidStudioProject/GitRepoViewer/app/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/  se.juneday.gitrepoviewer serialized```
 
 You should now have the serialized file itself and a text version of it. These are located in the following folder: ```adhd/apps/se.juneday.gitrepoviewer/```
 
