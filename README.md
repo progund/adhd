@@ -52,18 +52,6 @@ come with Android Studio so you need to know where to find the program.
 
 * bash - check out our [wiki pages](http://wiki.juneday.se/mediawiki/index.php/Bash) for more information on that. Once you've followed the instructions there you have tools such as sed, awk and grep which are needed. If you have no idea what we're talking about, you really (yes, REALLY!) need to check bash and its friends out. We suggest you attend the course: [Bash introduction](http://wiki.juneday.se/mediawiki/index.php/Bash-introduction) and [Bash programming](http://wiki.juneday.se/mediawiki/index.php/Bash_Programming). 
 
-# Software that uses ADHD
-
-We, the idiots at [juneday.se](http://wiki.juneday.se), use ADHD in some of our courses:
-* Android: [Android the practical way](http://wiki.juneday.se/mediawiki/index.php/Android_-_the_practical_way)
-* Java:  [Programming with Java](http://wiki.juneday.se/mediawiki/index.php/Programming_with_Java) and [More programming with Java](http://wiki.juneday.se/mediawiki/index.php/More_programming_with_Java)
-* Misc: [Extra Lectures](http://wiki.juneday.se/mediawiki/index.php/Misc:Extra_lectures)
-
-... all our courses have videos, texts, exercises, solutions and links
-to additional reading. We aim, and have come quite a long way, at
-providing intructions for teacher using our material. It's available
-for free under a free license.
-
 # Workflow
 
 ## Preparations
