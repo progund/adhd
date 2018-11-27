@@ -1,14 +1,15 @@
 #!/bin/bash
 
-###########################################3
+###########################################
 #
 # Android Development Helper Doctor - ADHD
 #
-# (c) Henrik Sandklef, Rikard Fröberg 2017
+# (c) 2017, 2018
+# Henrik Sandklef & Rikard Fröberg
 #
 # License GPLv3
 #
-###########################################3
+###########################################
 
 
 #
@@ -22,6 +23,11 @@ then
 fi
 LOG_FILE=~/.adhd.log
 
+PATHSEP=":"
+if [[ $OS == "Windows_NT" ]] || [[ $OSTYPE == "cygwin" ]]
+then
+    PATHSEP=";"
+fi
 
 # Use ADB to find path to emulator
 EMU=$(dirname $ADB)/../emulator/emulator
@@ -59,7 +65,7 @@ verify_sw()
     echo
     echo -n "Verifying ObjectCache: "
     # Check ObjectCache
-    CMD="java -cp $OC_PATH:$CLASSPATH se.juneday.ObjectCacheReader --test"
+    CMD="java -cp $OC_PATH${PATHSEP}$CLASSPATH se.juneday.ObjectCacheReader --test"
  #   echo $CMD
     $CMD 2>/dev/null >/dev/null
     if [ $? -ne 0 ]
@@ -172,8 +178,12 @@ usage()
     echo "   $SHELL_NAME [OPTION] APP MODE"
     echo 
     echo "DESCRIPTION"
-    echo "   $SHELL_NAME assists you with:"
-    echo "      Download and reads out information from files on an Android Device:"
+    echo "   $SHELL_NAME"
+    echo "      List android devices"
+    echo
+    echo "      List installed application (with database files and/or ObjectCache files)"
+    echo
+    echo "      Download and extract information from files on an Android Device:"
     echo "      * databases from an emulated device (or rooted physical device)"
     echo "      * serialized files (using Juneday's ObjectCache)"
     echo "      * files in your app's folder"
@@ -181,23 +191,36 @@ usage()
     echo "      * databases are presented in HTML and TXT"
     echo "      * serialized are presented in TXT"
     echo "LOG"
-    echo "   $SHELL_NAME logs to file "'$LOG_FILE' "(currently set to $LOG_FILE)"
+    echo "   $SHELL_NAME logs to file "'$LOG_FILE'
     echo 
     echo "OPTIONS"
-    echo "   --restart-daemon            - restarts the adb daemon and exits"
-    echo "   --list-devices,-ld          - lists running devices"
-    echo "   --list-available-devices, -lad - lists available devices"
-    echo "   --device                    - specifies what device to manage"
-    echo "                                 (if only one device is available this will be chosen)"
-    echo "   --list-database-apps,-lda   - lists only apps (on the device) with a database"
-    echo "   --list-serialized-apps,-lsa - list only apps (on the device) with serialized files"
-    echo "   -lsd                        - list only apps (on the device) with serialized files AND databases"
-    echo "   --list-apps,-la             - lists all apps (on the device)"
-    echo "   --adb PROG                  - sets adb program to PROG"
-    echo "   --help,-h                   - prints this help text"
-    echo "   --verify-software, -vs      - verify required softwares"
-    echo "   --objectcache-dir, -ocd     - path to ObjectCache classes"
-    echo "   --classpath, -cp            - CLASSPATH for Java programs"
+    echo "   --restart-daemon"
+    echo "        restarts the adb daemon and exits"
+    echo "   --list-devices,-ld"
+    echo "        lists running devices"
+    echo "   --list-available-devices, -lad"
+    echo "        lists available devices"
+    echo "   --device"
+    echo "        specifies what device to manage"
+    echo "        (if only one device is available this will be chosen)"
+    echo "   --list-database-apps,-lda"
+    echo "        lists only apps (on the device) with a database"
+    echo "   --list-serialized-apps,-lsa"
+    echo "        list only apps (on the device) with serialized files"
+    echo "   -lsd"
+    echo "        list only apps (on the device) with serialized files AND databases"
+    echo "   --list-apps,-la"
+    echo "        lists all apps (on the device)"
+    echo "   --adb PROG"
+    echo "        sets adb program to PROG"
+    echo "   --help,-h"
+    echo "        prints this help text"
+    echo "   --verify-software, -vs"
+    echo "        verify required softwares"
+    echo "   --objectcache-dir, -ocd"
+    echo "        directory where the ObjectCache class are located"
+    echo "   --classpath, -cp"
+    echo "        CLASSPATH for Java programs"
     echo 
     echo "APP"
     echo "   the program (on the Android Device) to manage"
@@ -209,12 +232,19 @@ usage()
     echo "   all - all of the above"
     echo 
     echo "ENVIRONMENT VARIABLES"
-    echo "   APP - the Android app to manage"
-    echo "   MODE - database, serialized, ...  "
-    echo "   ADB - Android debugger bridge tool"
-    echo "   ADEV - Android device to manage"
-    echo "   OC_PATH - ObjectCache directory"
-    echo "   CLASSPATH - CLASSPATH for java programs"
+    echo "   Set any of the below environment variables to alter the settings:"
+    echo "   APP "
+    echo "   - the Android app to manage. Default value: No default"
+    echo "   MODE"
+    echo "    - database, serialized, ... Default value: No default"
+    echo "   ADB"
+    echo "    - Android debugger bridge tool. Default: ~/Android/Sdk/platform-tools/adb"
+    echo "   ADEV"
+    echo "    - Android device to manage. Default value: No default"
+    echo "   OC_PATH"
+    echo "    - Directory where the ObjectCache class are located"
+    echo "   CLASSPATH"
+    echo "    - CLASSPATH for java programs"
     echo
     echo "RETURN VALUES"
     echo "    0 - success"
@@ -233,19 +263,27 @@ usage()
     echo "      lists all devices available"
     echo
     echo "   $SHELL_NAME  com.android.providers.contacts database"
-    echo "      downloads all databases associated with com.android.providers.contacts and creates TXT/HTML"
+    echo "      downloads all databases associated with"
+    echo "      com.android.providers.contacts and creates TXT/HTML"
     echo 
     echo "   $SHELL_NAME  se.juneday.systemet serialized"
-    echo "      downloads all files with serialized data for se.juneday.systemet and creates TXT"
+    echo "      downloads all files with serialized data for "
+    echo "      se.juneday.systemet and creates TXT"
     echo
     echo "   $SHELL_NAME  --device emulator-5554 se.juneday.systemet serialized"
-    echo "      downloads all files with serialized data for se.juneday.systemet on devce emulator-5554 and creates TXT"
+    echo "      downloads all files with serialized data for "
+    echo "      se.juneday.systemet on devce emulator-5554 and creates TXT"
     echo
-    echo "   $SHELL_NAME  -ocd ~/opt/ObjectCache --device emulator-5554 se.juneday.systemet serialized"
-    echo "      as above but using ObjectCache as found in dir ~/opt/ObjectCache"
+    echo "   $SHELL_NAME  -ocd ~/opt/ObjectCache --device emulator-5554 \\"
+    echo "   se.juneday.systemet serialized"
+    echo "      as above but using ObjectCache as found in"
+    echo "      dir ~/opt/ObjectCache"
     echo
-    echo "   $SHELL_NAME  -ocd ~/opt/ObjectCache -cp ~/AndroidStudioProjects/BlaBlaBla --device emulator-5554 se.juneday.systemet serialized"
-    echo "      as above but setting CLASSPATH to ~/AndroidStudioProjects/BlaBlaBla to find your own classes"
+    echo "   $SHELL_NAME  -ocd ~/opt/ObjectCache  \\"
+    echo "   -cp ~/AndroidStudioProjects/BlaBlaBla --device emulator-5554 \\"
+    echo "   se.juneday.systemet serialized"
+    echo "      as above but setting CLASSPATH to "
+    echo "      ~/AndroidStudioProjects/BlaBlaBla to find your own classes"
     echo
 
 }
@@ -458,7 +496,7 @@ read_serialized()
     echo
     echo "Converting serialized files to txt files"
     echo "========================================================"
-    CMD="java -cp $OC_PATH:$CLASSPATH se.juneday.ObjectCacheReader "
+    CMD="java -cp $OC_PATH${PATHSEP}$CLASSPATH se.juneday.ObjectCacheReader "
     for ser in $(find adhd/apps/$APP -name "*serialized.data" | sed 's,_serialized.data,,g')
     do
         echo -n " * creating ${ser}.txt: "
