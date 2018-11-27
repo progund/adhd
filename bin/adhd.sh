@@ -176,6 +176,7 @@ usage()
     echo "      Download and reads out information from files on an Android Device:"
     echo "      * databases from an emulated device (or rooted physical device)"
     echo "      * serialized files (using Juneday's ObjectCache)"
+    echo "      * files in your app's folder"
     echo "      Manage (and visualise) downloaded files:"
     echo "      * databases are presented in HTML and TXT"
     echo "      * serialized are presented in TXT"
@@ -202,8 +203,9 @@ usage()
     echo "   the program (on the Android Device) to manage"
     echo 
     echo "MODE"
-    echo "   serializable - downloads files as serialized by ObjectCache and generates TXT files*"
+    echo "   serialized - downloads files as serialized by ObjectCache and generates TXT files*"
     echo "   database - downloads database files and creates TXT file and HTML pages from each"
+    echo "   files - all your app's files (as is)"
     echo "   all - all of the above"
     echo 
     echo "ENVIRONMENT VARIABLES"
@@ -371,6 +373,10 @@ do
             CLASSPATH=$2
             shift
             ;;
+        "files")
+            MODE=files
+            log "MODE set to $MODE"
+            ;;
         "database")
             MODE=database
             log "MODE set to $MODE"
@@ -379,8 +385,8 @@ do
             MODE=serialized
             log "MODE set to $MODE"
             ;;
-        "both")
-            MODE=both
+        "all")
+            MODE=all
             log "MODE set to $MODE"
             ;;
         *)
@@ -403,6 +409,7 @@ check_app()
 
 DATA_PATH=/data/data/${APP}
 DB_PATH=${DATA_PATH}/databases
+FILE_PATH=${DATA_PATH}/files
 DEST_DIR=$PROGRAM_SUITE/apps/$APP
 
 prepare_dload()
@@ -432,6 +439,16 @@ move_file()
     echo -n "* Moving file $TO_MOVE:           " 
     mv ${TO_MOVE} $DEST_DIR >> $LOG_FILE 2>&1
     exit_if_error $? "mv ${TO_MODE} $DEST_DIR" "Failed moving file to $DEST_DIR"
+    echo "OK"
+}
+
+move_file_dest()
+{
+    TO_MOVE="$1"
+    DESTINATION="$2"
+    echo -n "* Moving file $TO_MOVE:           " 
+    mv ${TO_MOVE} $DESTINATION >> $LOG_FILE 2>&1
+    exit_if_error $? "mv ${TO_MODE} $DESTINATION" "Failed moving file to $DESTINATION"
     echo "OK"
 }
 
@@ -486,6 +503,37 @@ download_db()
         prepare_dload "${DB_PATH}/$dbase"
         dload "${DEST_PATH}/${DB_NAME}"
         move_file ${DB_NAME}
+        CNT=$(( $CNT + 1 ))
+        echo
+    done
+}
+
+download_files()
+{
+    mkdir -p $DEST_DIR
+    CNT=1
+
+    echo "Entering "
+    export FILE_PATH
+    for dir in $(${ADBW} shell "$SHELL_SU_CMD find ${FILE_PATH}/ -type d" )  
+    do
+        DIR_NAME=$(echo $dir | sed -e "s,${FILE_PATH},,g")
+        echo "Handling dir # $CNT: ./$DIR_NAME"
+        mkdir -p $DEST_DIR/files/$DIR_NAME
+        CNT=$(( $CNT + 1 ))
+    done
+
+    CNT=1
+    for file in $(${ADBW} shell "$SHELL_SU_CMD find ${FILE_PATH}/ -type f" 2>> $LOG_FILE)  
+    do
+        FILE_NAME=$(basename $file)
+        DIR_NAME=$(dirname $file | sed -e "s,${FILE_PATH},,g")
+        echo
+        echo "Handling file # $CNT: $FILE_NAME   [$DIR_NAME]"
+        echo "========================================================"
+        prepare_dload "$file"
+        dload "${DEST_PATH}/$(basename ${FILE_NAME})"
+        move_file_dest ${FILE_NAME} $DEST_DIR/files/$DIR_NAME
         CNT=$(( $CNT + 1 ))
         echo
     done
@@ -554,13 +602,18 @@ case $MODE in
         download_db
         read_db
         ;;
+    "files")
+        log "Download files"
+        check_app
+        download_files
+        ;;
     "serialized")
         log "Download serialized file"
         check_app
         download_serialized
         read_serialized
         ;;
-    "both")
+    "all")
         log "Download db"
         check_app
         download_db
@@ -569,6 +622,9 @@ case $MODE in
         check_app
         download_serialized
         read_serialized
+        log "Download all files"
+        check_app
+        download_files
         ;;
     *)
         log "no mode set, bailing out"
