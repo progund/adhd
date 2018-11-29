@@ -80,6 +80,10 @@ We rely totally on
 [adb](https://developer.android.com/studio/command-line/adb.html). It
 come with Android Studio so you need to know where to find the program.
 
+## jq
+
+jq is used to check for newer versions of ObjectCache. If you're not intending to use adhd to install or update ObjectCache (using the option ```-io``` you don't need to isntall jq - however we recommend jq for every day use.
+
 ## Misc other softwares
 
 * bash - check out our [wiki pages](http://wiki.juneday.se/mediawiki/index.php/Bash) for more information on that. Once you've followed the instructions there you have tools such as sed, awk and grep which are needed. If you have no idea what we're talking about, you really (yes, REALLY!) need to check bash and its friends out. We suggest you attend the course: [Bash introduction](http://wiki.juneday.se/mediawiki/index.php/Bash-introduction) and [Bash programming](http://wiki.juneday.se/mediawiki/index.php/Bash_Programming). 

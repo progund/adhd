@@ -33,10 +33,6 @@ fi
 EMU=$(dirname $ADB)/../emulator/emulator
 DEBUG=false
 
-# ObjectCache - should point to the latest version
-OC_MAJOR=0.2
-OC_FILE=object-cache-0.2.1.jar
-
 
 log()
 {
@@ -363,32 +359,64 @@ list_apps()
 }
 
 
-setup_oc() {
+dload_latest_oc()
+{
+    if [ ! -d libs ]
+    then
+        mkdir libs
+    fi
 
-    LATEST_OC=$(curl -s https://api.github.com/repos/progund/object-cache/releases/latest | jq '.assets[].browser_download_url' | sed 's,",,g')
-    LATEST_OC_FILE=$(basename https://github.com/progund/object-cache/releases/download/$OC_MAJOR/$OC_FILE)
-    if [ "$OC_FILE" != "$LATEST_OC_FILE" ]
+    #
+    # Find latest ObjectCache
+    #
+    ## prevent too frequent dload of JSON file
+    LATEST_JSON_FILE=libs/latest.json
+    ALLOWED_AGE=60
+    if [ ! -f  $LATEST_JSON_FILE ] || [ $(find libs -name "latest.json" -mmin +$ALLOWED_AGE| wc -l) -ne 0 ]
+    then
+        # download JSON again
+        curl -o $LATEST_JSON_FILE -s https://api.github.com/repos/progund/object-cache/releases/latest 
+    fi
+    LATEST_OC_VERSION=$(cat $LATEST_JSON_FILE | jq '.tag_name' | sed 's,",,g')
+    LATEST_OC=$(cat $LATEST_JSON_FILE | jq '.assets[0].browser_download_url' | sed 's,",,g')
+    LATEST_OC_FILE=$(basename $LATEST_OC)
+
+    #
+    # Find current version
+    #
+    LATEST_INSTALLED_OC=$( basename $(ls -1tr libs/*.jar | tail -1))
+
+#    echo "$LATEST_INSTALLED_OC | $LATEST_OC_FILE"
+    
+    if [ "$LATEST_INSTALLED_OC" != "$LATEST_OC_FILE" ]
     then
         echo "+---------------------------------------+"
         echo "|     Newer version of OC available     |"
         echo "|                                       |"
-        echo "|   You're using:  $OC_FILE    "
-        echo "|   Available:     $LATEST_OC_FILE"
+        echo "| You're using:  $LATEST_INSTALLED_OC"
+        echo "| Available:     $LATEST_OC_FILE "
+        echo "|   - url:       $LATEST_OC"
         echo "|                                       |"
         echo "+---------------------------------------+"
-        
+        echo
+        echo "Downloading $LATEST_OC"
+        echo
+        curl -o libs/$LATEST_OC_FILE -LJ $LATEST_OC
+    else
+        echo "Latest version of ObjectCache ($LATEST_OC_FILE) already installed"
     fi
-    
-    if [ "$OC_PATH" = "" ]
+}
+
+setup_oc() {
+    if [ "$OC_PATH" != "" ]
     then
-        OC_FILE_PATH=libs/$OC_FILE
-        if [ ! -f $OC_FILE_PATH ]
-        then
-            mkdir libs
-            curl -o $OC_FILE_PATH -LJ https://github.com/progund/object-cache/releases/download/$OC_MAJOR/$OC_FILE
-        fi
-        OC_PATH=$OC_FILE_PATH
+        log "OC_PATH: $OC_PATH   - discarding setup"
+        return 
     fi
+
+    LATEST_INSTALLED_OC=$( basename $(ls -1tr libs/*.jar | tail -1))
+    log "Using: $LATEST_INSTALLED_OC"
+    OC_PATH=libs/$LATEST_INSTALLED_OC
 }
 
 
@@ -455,7 +483,7 @@ do
             exit 0
             ;;
         "--install-object-cache"|"-io")
-            setup_oc
+            dload_latest_oc            
             exit
             ;;
         "--device")
@@ -585,7 +613,6 @@ move_file_dest()
 
 read_serialized()
 {
-    setup_oc
     log
     log "Converting serialized files to txt files"
     log "========================================================"
@@ -642,6 +669,7 @@ read_serialized()
 manage_serialized()
 {
     check_app
+    setup_oc
     echo "Download and deserialize files from device"
     download_serialized
     read_serialized
