@@ -402,6 +402,13 @@ dload_latest_oc()
         echo "Downloading $LATEST_OC"
         echo
         curl -o libs/$LATEST_OC_FILE -LJ $LATEST_OC
+        if [ $RET -ne 0 ]
+        then
+            echo "Failed installing ($LATEST_OC)"
+            exit 2
+        fi
+        echo 
+        echo "ObjectCache ($LATEST_OC_FILE) installed in libs/"
     else
         echo "Latest version of ObjectCache ($LATEST_OC_FILE) already installed"
     fi
