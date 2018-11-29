@@ -14,6 +14,35 @@ converted to txt and/or html format.
 
 We applogise of we offend anyone with the name. We think it's funny.
 
+# Features
+
+## Extract SQLite from an app on a device
+
+If your app has one or many databases adhd can retrieve these files
+and present the data in txt or html format you need SQLite.
+
+You need to have [SQLite](https://www.sqlite.org/) (version 3)
+installed. Ok, you can download the SQLite database files from your
+Android device without SQLite. No problems. But if you either want
+them converted into txt and html or open them up using SQLite we
+suggest you install and make sure sqlite3 can be found using your PATH
+variable.
+
+## Extract cached Objects (using ObjectCache) from an app on a device
+
+If your Android app uses ObjectCache to cache data you can use adhd to
+retrieve the cache objects in a serialized file (Java Serialization)
+and print them out using the object's ```toString()``` method.
+
+### Extract files from an app on a device
+
+If your app stores files in the app's private directory adhd can
+retrieve these for local inspection.
+
+### Start a shell on a device
+
+If you feel starting a shell on the device adhd helps you with this.
+
 # Required tools
 
 ## ObjectCache
@@ -43,17 +72,15 @@ which is also developed by your not so very humble idiots at
 ADHD will download ObjectCache to the current directory if you run adhd.sh like this:
 ```adhd.sh --install-object-cache```
 
+
 ## SQLite
-
-If you want to retrieve database files and present the data in txt or
-html format you need SQLite.
-
 You need to have [SQLite](https://www.sqlite.org/) (version 3)
 installed. Ok, you can download the SQLite database files from your
 Android device without SQLite. No problems. But if you either want
 them converted into txt and html or open them up using SQLite we
 suggest you install and make sure sqlite3 can be found using your PATH
 variable.
+
 
 ## ADB - Android Debugger Bridge
 
