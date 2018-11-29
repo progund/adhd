@@ -21,13 +21,6 @@ We applogise of we offend anyone with the name. We think it's funny.
 If your app has one or many databases adhd can retrieve these files
 and present the data in txt or html format you need SQLite.
 
-You need to have [SQLite](https://www.sqlite.org/) (version 3)
-installed. Ok, you can download the SQLite database files from your
-Android device without SQLite. No problems. But if you either want
-them converted into txt and html or open them up using SQLite we
-suggest you install and make sure sqlite3 can be found using your PATH
-variable.
-
 ## Extract cached Objects (using ObjectCache) from an app on a device
 
 If your Android app uses ObjectCache to cache data you can use adhd to
