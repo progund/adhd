@@ -33,6 +33,11 @@ fi
 EMU=$(dirname $ADB)/../emulator/emulator
 DEBUG=false
 
+# ObjectCache - should point to the latest version
+OC_MAJOR=0.2
+OC_FILE=object-cache-0.2.1.jar
+
+
 log()
 {
     echo "$*" >> $LOG_FILE
@@ -359,18 +364,30 @@ list_apps()
 
 
 setup_oc() {
+
+    LATEST_OC=$(curl -s https://api.github.com/repos/progund/object-cache/releases/latest | jq '.assets[].browser_download_url' | sed 's,",,g')
+    LATEST_OC_FILE=$(basename https://github.com/progund/object-cache/releases/download/$OC_MAJOR/$OC_FILE)
+    if [ "$OC_FILE" != "$LATEST_OC_FILE" ]
+    then
+        echo "+---------------------------------------+"
+        echo "|     Newer version of OC available     |"
+        echo "|                                       |"
+        echo "|   You're using:  $OC_FILE    "
+        echo "|   Available:     $LATEST_OC_FILE"
+        echo "|                                       |"
+        echo "+---------------------------------------+"
+        
+    fi
+    
     if [ "$OC_PATH" = "" ]
     then
-        OC_MAJOR=0.1
-        OC_FILE=object-cache-0.1.91.jar
-
-        if [ ! -f libs/$OC_FILE ]
+        OC_FILE_PATH=libs/$OC_FILE
+        if [ ! -f $OC_FILE_PATH ]
         then
             mkdir libs
-            curl -o libs/$OC_FILE -LJ https://github.com/progund/object-cache/releases/download/$OC_MAJOR/$OC_FILE
-            
+            curl -o $OC_FILE_PATH -LJ https://github.com/progund/object-cache/releases/download/$OC_MAJOR/$OC_FILE
         fi
-        OC_PATH=libs/object-cache-0.1.91.jar
+        OC_PATH=$OC_FILE_PATH
     fi
 }
 
@@ -574,27 +591,70 @@ read_serialized()
     log "========================================================"
     CNT=0
     SUCC=0
+    echo "  * Converting serialized files:"
     CMD="java -cp $OC_PATH${PATHSEP}$CLASSPATH  se.juneday.ObjectCacheReader "
     for ser in $(find adhd/apps/$APP -name "*serialized.data" | sed 's,_serialized.data,,g')
     do
-        echo -n " * creating ${ser}.txt : "
-        echo $CMD $ser
+        echo -n "    * converting to ${ser}.txt : "
+#        echo $CMD $ser
         $CMD $ser > ${ser}.txt
-        if [ $? -eq 0 ]
+        RET=$?
+#        echo "$CMD => $RET"
+        if [ $RET -eq 0 ]
         then
             echo "OK"
             SUCC=$(( $SUCC + 1 ))
         else
-            echo "FAILURE"
+            echo
+            echo
+            echo
+            echo
+            echo "  ******** ERROR ************"
+            echo
+            echo "Make sure you have the classes (you're trying to read out "
+            echo "from the device) in your CLASSPATH. In bash, typically do:"
+            echo 
+            echo " * Go to your project folder, typically do"
+            echo '     cd ~/AndroidStudioProjects/your-project'
+            echo 
+            echo " * Enter the java folder:, typically do"  
+            echo '     cd main/src/app/java'
+            echo 
+            echo " * Compile the domain class and specify a destination dir"
+            echo "   for the class file(s), typically do"
+            echo '     mkdir ../local'
+            echo '     javac -d ../local/ se/juneday/memberimages/domain/Member.java'
+            echo 
+            echo " * Execute $0 again, typically do"
+            echo "     $(basename $0) --classpath ../local $APP $MODE"
+            echo 
         fi
         CNT=$(( $CNT + 1 ))
     done
     if [ $CNT -ne 0 ]
     then
-        echo "Converted $CNT files, $SUCC succeeded"
+        echo "  * $CNT serialized files, $SUCC successful conversion(s)"
     else
-        echo "No serialized files read and converted"
+        echo "  * No serialized files read and converted"
     fi
+}
+
+manage_serialized()
+{
+    check_app
+    echo "Download and deserialize files from device"
+    download_serialized
+    read_serialized
+    echo
+}
+
+manage_db()
+{
+    check_app
+    echo "Download and convert database files from device"
+    download_db
+    read_db
+    echo
 }
 
 download_serialized()
@@ -613,9 +673,9 @@ download_serialized()
     done
     if [ $CNT -ne 1 ]
     then
-        echo "Downloaded $(( $CNT - 1 )) files, $SUCC succeeded"
+        echo "  * Downloaded $(( $CNT - 1 )) files"
     else
-        echo "No serialized files downloaded from device"
+        echo "  * No serialized files downloaded from device"
     fi
 }
 
@@ -639,14 +699,16 @@ download_db()
     done
     if [ $CNT -ne 1 ]
     then
-        echo "Downloaded $(( $CNT - 1 )) database file"
+        echo "  * Downloaded $(( $CNT - 1 )) database file"
     else
-        echo "No database files downloaded from device"
+        echo "  * No database files downloaded from device"
     fi
 }
 
 download_files()
 {
+    check_app
+    echo "Download file from device"
     mkdir -p $DEST_DIR
     CNT=1
 
@@ -676,11 +738,11 @@ download_files()
 
     if [ $CNT -eq 1 ]
     then
-        echo "No files found in $FILE_PATH"
+        echo "  * No files found in $FILE_PATH"
     else
-        echo "Downloaded $(( $CNT - -1 )) files from $FILE_PATH"
+        echo "  * Downloaded $(( $CNT - -1 )) files from $FILE_PATH"
     fi
-
+    echo
 }
 
 sql()
@@ -734,9 +796,9 @@ read_db()
     done
     if [ $CNT -ne 0 ]
     then
-        echo "Converted $CNT database files"
+        echo "  * Converted $CNT database files"
     else
-        echo "No database files read and converted"
+        echo "  * No database files read and converted"
     fi
 }
 
@@ -760,21 +822,14 @@ case $MODE in
         ;;
     "serialized")
         log "Download serialized file"
-        check_app
-        download_serialized
-        read_serialized
+        manage_serialized
         ;;
     "all")
         log "Download db"
-        check_app
-        download_db
-        read_db
+        manage_db
         log "Download serialized file"
-        check_app
-        download_serialized
-        read_serialized
+        manage_serialized
         log "Download all files"
-        check_app
         download_files
         ;;
     *)
