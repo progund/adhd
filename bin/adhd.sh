@@ -240,6 +240,8 @@ usage()
     echo "        lists only apps (on the device) with a database"
     echo "   --list-serialized-apps,-lsa"
     echo "        list only apps (on the device) with serialized files"
+    echo "   --shell"
+    echo "        start a shell on your device"
     echo "   -lsd"
     echo "        list only apps (on the device) with serialized files AND databases"
     echo "   --list-apps,-la"
@@ -402,6 +404,35 @@ do
             log "listing devices"
             ${ADBW} devices  2>> $LOG_FILE 
             exit
+            ;;
+        "--shell")
+            log "starting shell"
+            DEVICE_COUNT=$(${ADBW} devices | grep -v "List of devices attached" | grep -v "^[ \t]*$" | wc -l)
+
+            if [ $DEVICE_COUNT -eq 0 ]
+            then
+                echo "No device online"
+                exit 1
+            elif [ $DEVICE_COUNT -eq 1 ]
+            then
+                echo "Starting shell, press ctrl-d (or type exit and press enter) to exit the shell"
+                ${ADBW} shell
+            else
+                if [ "$ADEV" = "" ]
+                then
+                    echo "$DEVICE_COUNT devices online"
+                    echo "Choose any of the below with the --device option, like this:"
+                    for device in $(${ADBW} devices | grep -v "List of devices attached" | grep -v "^[ \t]*$" | sed  's,device,,g')
+                    do
+                        echo "   $0 --device $device --shell"
+                    done
+                    exit 1
+                else
+                    echo "Starting shell, press ctrl-d (or type exit and press enter) to exit the shell"
+                    ${ADBW} shell
+                fi
+            fi
+            exit 0
             ;;
         "--install-object-cache"|"-io")
             setup_oc
