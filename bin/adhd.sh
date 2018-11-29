@@ -414,8 +414,27 @@ setup_oc() {
         return 
     fi
 
-    LATEST_INSTALLED_OC=$( basename $(ls -1tr libs/*.jar | tail -1))
+    LATEST_INSTALLED_OC=$(basename $(ls -1tr libs/*.jar | tail -1))
+    
     log "Using: $LATEST_INSTALLED_OC"
+    if [ "$LATEST_INSTALLED_OC" = "" ]
+    then
+        echo
+        echo " ** ERROR **"
+        echo
+        echo "ObjectCache not found"
+        echo
+        echo "Two alternatives to solve this:"
+        echo
+        echo " 1. Let adhd install ObjectCache for you"
+        echo "      adhd.sh -io"
+        echo 
+        echo " 2. Install and point out ObjectCache manually,"
+        echo "    assuming OC is install in ~/opt/ObjectCache, type the following"
+        echo "      adhd.sh -ocd ~/opt/ObjectCache"
+        echo
+        exit
+    fi
     OC_PATH=libs/$LATEST_INSTALLED_OC
 }
 
@@ -653,7 +672,7 @@ read_serialized()
             echo '     javac -d ../local/ se/juneday/memberimages/domain/Member.java'
             echo 
             echo " * Execute $0 again, typically do"
-            echo "     $(basename $0) --classpath ../local $APP $MODE"
+            echo "     $0 --classpath ../local $APP $MODE"
             echo 
         fi
         CNT=$(( $CNT + 1 ))
