@@ -58,13 +58,12 @@ should start adhd like this:
 
 ADHD can download serialized files from the Android devices. We have
 only tested copying serialized files as created by
-[ObjectCache](https://github.com/progund/java-extra-lectures/tree/master/caching)
+[ObjectCache](https://github.com/progund/object-cache)
 which is also developed by your not so very humble idiots at
 [juneday.se](http://wiki.juneday.se).
 
 ADHD will download ObjectCache to the current directory if you run adhd.sh like this:
 ```adhd.sh --install-object-cache```
-
 
 ## SQLite
 You need to have [SQLite](https://www.sqlite.org/) (version 3)
