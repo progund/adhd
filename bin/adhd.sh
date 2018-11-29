@@ -61,7 +61,7 @@ verify_sw()
         echo "OK"
     fi
 
-    setup_oc
+#    setup_oc
     echo
     echo -n "Verifying ObjectCache: "
     # Check ObjectCache
@@ -72,9 +72,12 @@ verify_sw()
     then
         echo 
         echo "*** WARNING ***"
-        echo "ObjectCache not found. You will not be able to read Serialized files"
-        echo "To set the path to the ObjectCache dir, do something like the below:"
-        echo "bin/adhd.sh -ocd ~/opt/ObjectCache --verify-software"
+        echo "ObjectCache not found. You will not be able to read Serialized files."
+        echo "You can either:"
+        echo "1. set the path to the ObjectCache dir, do something like the below:"
+        echo "   adhd.sh -ocd ~/opt/ObjectCache --verify-software"
+        echo "or"
+        echo "   adhd.sh --install-object-cache"
         echo 
         RET=4
     else
@@ -367,6 +370,10 @@ do
             ${ADBW} devices  2>> $LOG_FILE 
             exit
             ;;
+        "--install-object-cache"|"-io")
+            setup_oc
+            exit
+            ;;
         "--device")
             log "setting device to $2"
             export ADEV=$2
@@ -476,7 +483,7 @@ move_file()
 
 read_serialized()
 {
-    setup_oc
+#    setup_oc
     echo
     echo "Converting serialized files to txt files"
     echo "========================================================"
