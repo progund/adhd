@@ -34,12 +34,12 @@ If your Android app uses ObjectCache to cache data you can use adhd to
 retrieve the cache objects in a serialized file (Java Serialization)
 and print them out using the object's ```toString()``` method.
 
-### Extract files from an app on a device
+## Extract files from an app on a device
 
 If your app stores files in the app's private directory adhd can
 retrieve these for local inspection.
 
-### Start a shell on a device
+## Start a shell on a device
 
 If you feel starting a shell on the device adhd helps you with this.
 
