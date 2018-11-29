@@ -359,15 +359,18 @@ list_apps()
 
 
 setup_oc() {
-    if [ ! -f se/juneday/ObjectCacheReader.class ]
+    if [ "$OC_PATH" = "" ]
     then
-        mkdir -p se/juneday/
-        curl -o se/juneday/ObjectCacheReader.java https://raw.githubusercontent.com/progund/java-extra-lectures/master/caching/se/juneday/ObjectCacheReader.java
-        curl -o se/juneday/ObjectCache.java https://raw.githubusercontent.com/progund/java-extra-lectures/master/caching/se/juneday/ObjectCache.java
-        exit_if_error $? "Failed to download ObjectCache"
+        OC_MAJOR=0.1
+        OC_FILE=object-cache-0.1.91.jar
 
-        javac se/juneday/ObjectCacheReader.java
-        exit_if_error $? "Failed to compile ObjectCache"
+        if [ ! -f libs/$OC_FILE ]
+        then
+            mkdir libs
+            curl -o libs/$OC_FILE -LJ https://github.com/progund/object-cache/releases/download/$OC_MAJOR/$OC_FILE
+            
+        fi
+        OC_PATH=libs/object-cache-0.1.91.jar
     fi
 }
 
@@ -571,10 +574,11 @@ read_serialized()
     log "========================================================"
     CNT=0
     SUCC=0
-    CMD="java -cp $OC_PATH${PATHSEP}$CLASSPATH se.juneday.ObjectCacheReader "
+    CMD="java -cp $OC_PATH${PATHSEP}$CLASSPATH  se.juneday.ObjectCacheReader "
     for ser in $(find adhd/apps/$APP -name "*serialized.data" | sed 's,_serialized.data,,g')
     do
-        echo -n " * creating ${ser}.txt: "
+        echo -n " * creating ${ser}.txt : "
+        echo $CMD $ser
         $CMD $ser > ${ser}.txt
         if [ $? -eq 0 ]
         then
