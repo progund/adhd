@@ -1,8 +1,8 @@
 # ADHD - Android Development Helper Doctor 
 
-ADHD can retrieve database files and serialized files from an Android
-device (with root access), The retrieved files can be converted to txt
-and/or html format.
+ADHD can retrieve database files, serialized files and 'normal' file
+from an Android device (with root access), The retrieved files can be
+converted to txt and/or html format.
 
 # Legal stuff
 
@@ -19,7 +19,20 @@ We applogise of we offend anyone with the name. We think it's funny.
 ## ObjectCache
 
 If you want to retrieve and convert (de-serialize) serialized files
-created on the device using ObjectCache you need ObjectCache.
+created on the device using ObjectCache you, of course, need ObjectCache.
+
+### Point out ObjectCache yourself
+
+With the option ```-ocd dir``` you can specify the location of the
+ObjectCache jar file. Let's say you have ObjectCache installed in the
+directory ```${HOME}/libs/object-cache/object-cache-01.jar``` then you
+should start adhd like this:
+
+~~~
+  $0 -ocd ${HOME}/libs/object-cache/object-cache-01.jar .... etc
+~~~
+
+### Let adhd set up ObjectCache
 
 ADHD can download serialized files from the Android devices. We have
 only tested copying serialized files as created by
@@ -109,7 +122,7 @@ DESCRIPTION
       Download and extract information from files on an Android Device:
       * databases from an emulated device (or rooted physical device)
       * serialized files (using Juneday's ObjectCache)
-
+      * files in your app's folder
       Manage (and visualise) downloaded files:
       * databases are presented in HTML and TXT
       * serialized are presented in TXT
@@ -144,13 +157,16 @@ OPTIONS
         directory where the ObjectCache class are located
    --classpath, -cp
         CLASSPATH for Java programs
+   --debug, -d
+        verbose printing enabled
 
 APP
    the program (on the Android Device) to manage
 
 MODE
-   serializable - downloads files as serialized by ObjectCache and generates TXT files*
+   serialized - downloads files as serialized by ObjectCache and generates TXT files*
    database - downloads database files and creates TXT file and HTML pages from each
+   files - all your app's files (as is)
    all - all of the above
 
 ENVIRONMENT VARIABLES

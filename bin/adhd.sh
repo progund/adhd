@@ -31,6 +31,41 @@ fi
 
 # Use ADB to find path to emulator
 EMU=$(dirname $ADB)/../emulator/emulator
+DEBUG=false
+
+log()
+{
+    echo "$*" >> $LOG_FILE
+    if [ "$DEBUG" = "true" ]
+    then
+        echo "$*" 1>&2
+    fi
+}
+
+logn()
+{
+    echo -n "$*" >> $LOG_FILE
+    if [ "$DEBUG" = "true" ]
+    then
+        echo -n "$*" 1>&2
+    fi
+}
+
+
+error()
+{
+    echo "$*" 1>&2
+    log "$*"
+}
+
+verbose()
+{
+    if [ "$DEBUG" = "true" ]
+    then
+        echo "$*" 1>&2
+    fi
+    log "$*"
+}
 
 verify_sw()
 {
@@ -120,11 +155,6 @@ CLIARGS=$*
 ADBW=adbw
 SQLITE=sqlite3
 
-log()
-{
-    echo "$*" >> $LOG_FILE
-}
-
 log "---=== $(date) ===---"
 
 
@@ -189,7 +219,7 @@ usage()
     echo "      Download and extract information from files on an Android Device:"
     echo "      * databases from an emulated device (or rooted physical device)"
     echo "      * serialized files (using Juneday's ObjectCache)"
-    echo
+    echo "      * files in your app's folder"
     echo "      Manage (and visualise) downloaded files:"
     echo "      * databases are presented in HTML and TXT"
     echo "      * serialized are presented in TXT"
@@ -224,13 +254,16 @@ usage()
     echo "        directory where the ObjectCache class are located"
     echo "   --classpath, -cp"
     echo "        CLASSPATH for Java programs"
+    echo "   --debug, -d"
+    echo "        verbose printing enabled"
     echo 
     echo "APP"
     echo "   the program (on the Android Device) to manage"
     echo 
     echo "MODE"
-    echo "   serializable - downloads files as serialized by ObjectCache and generates TXT files*"
+    echo "   serialized - downloads files as serialized by ObjectCache and generates TXT files*"
     echo "   database - downloads database files and creates TXT file and HTML pages from each"
+    echo "   files - all your app's files (as is)"
     echo "   all - all of the above"
     echo 
     echo "ENVIRONMENT VARIABLES"
@@ -413,9 +446,16 @@ do
             OC_PATH=$2
             shift
             ;;
+        "--debug"|"-d")
+            DEBUG=true
+            ;;
         "--classpath"|"-cp")
             CLASSPATH=$2
             shift
+            ;;
+        "files")
+            MODE=files
+            log "MODE set to $MODE"
             ;;
         "database")
             MODE=database
@@ -425,8 +465,8 @@ do
             MODE=serialized
             log "MODE set to $MODE"
             ;;
-        "both")
-            MODE=both
+        "all")
+            MODE=all
             log "MODE set to $MODE"
             ;;
         *)
@@ -449,44 +489,57 @@ check_app()
 
 DATA_PATH=/data/data/${APP}
 DB_PATH=${DATA_PATH}/databases
+FILE_PATH=${DATA_PATH}/files
 DEST_DIR=$PROGRAM_SUITE/apps/$APP
 
 prepare_dload()
 {
     TO_DLOAD="$1"
-    echo -n "* Preparing download of $TO_DLOAD: "
+    logn "* Preparing download of $TO_DLOAD: "
     CMD="$SHELL_SU_CMD cp $1 ${DEST_PATH}/"
     ${ADBW} shell "$CMD"   >> $LOG_FILE 2>&1
     exit_if_error $? "$CMD"  "Failed preparing file download on device"
-    echo "OK"
+    log "OK"
 }
 
 dload()
 {
     TO_DLOAD="$1"
-    echo -n "* Downloading $TO_DLOAD:           " 
+    logn "* Downloading $TO_DLOAD:           " 
     CMD="pull ${TO_DLOAD}"
     ${ADBW} ${CMD} >> $LOG_FILE 2>&1
     exit_if_error $? "${ADBW}  ${CMD}" "Failed downloading file from device"
-    echo "OK"
+    log "OK"
 
 }
 
 move_file()
 {
     TO_MOVE="$1"
-    echo -n "* Moving file $TO_MOVE:           " 
+    logn "* Moving file $TO_MOVE:           " 
     mv ${TO_MOVE} $DEST_DIR >> $LOG_FILE 2>&1
     exit_if_error $? "mv ${TO_MODE} $DEST_DIR" "Failed moving file to $DEST_DIR"
-    echo "OK"
+    log "OK"
+}
+
+move_file_dest()
+{
+    TO_MOVE="$1"
+    DESTINATION="$2"
+    logn "* Moving file $TO_MOVE:           " 
+    mv ${TO_MOVE} $DESTINATION >> $LOG_FILE 2>&1
+    exit_if_error $? "mv ${TO_MODE} $DESTINATION" "Failed moving file to $DESTINATION"
+    log "OK"
 }
 
 read_serialized()
 {
-#    setup_oc
-    echo
-    echo "Converting serialized files to txt files"
-    echo "========================================================"
+    setup_oc
+    log
+    log "Converting serialized files to txt files"
+    log "========================================================"
+    CNT=0
+    SUCC=0
     CMD="java -cp $OC_PATH${PATHSEP}$CLASSPATH se.juneday.ObjectCacheReader "
     for ser in $(find adhd/apps/$APP -name "*serialized.data" | sed 's,_serialized.data,,g')
     do
@@ -495,10 +548,18 @@ read_serialized()
         if [ $? -eq 0 ]
         then
             echo "OK"
+            SUCC=$(( $SUCC + 1 ))
         else
             echo "FAILURE"
         fi
-    done    
+        CNT=$(( $CNT + 1 ))
+    done
+    if [ $CNT -ne 0 ]
+    then
+        echo "Converted $CNT files, $SUCC succeeded"
+    else
+        echo "No serialized files read and converted"
+    fi
 }
 
 download_serialized()
@@ -507,14 +568,20 @@ download_serialized()
     CNT=1
     for ser in $(${ADBW} shell "$SHELL_SU_CMD ls ${DATA_PATH}/ | grep \.serialized.data" 2>> $LOG_FILE)  
     do
-        echo
-        echo "Handling serialized file # $CNT: $ser"
-        echo "========================================================"
+        log
+        log "Handling serialized file # $CNT: $ser"
+        log "========================================================"
         prepare_dload "${DATA_PATH}/$ser"
         dload "${DEST_PATH}/${ser}"
         move_file "${ser}"
         CNT=$(( $CNT + 1 ))
     done
+    if [ $CNT -ne 1 ]
+    then
+        echo "Downloaded $(( $CNT - 1 )) files, $SUCC succeeded"
+    else
+        echo "No serialized files downloaded from device"
+    fi
 }
 
 download_db()
@@ -526,15 +593,59 @@ download_db()
     do
         DB_NAME=$(basename $dbase)
         
-        echo
-        echo "Handling database # $CNT: $DB_NAME"
-        echo "========================================================"
+        log
+        log "Handling database # $CNT: $DB_NAME"
+        log "========================================================"
         prepare_dload "${DB_PATH}/$dbase"
         dload "${DEST_PATH}/${DB_NAME}"
         move_file ${DB_NAME}
         CNT=$(( $CNT + 1 ))
-        echo
+        log
     done
+    if [ $CNT -ne 1 ]
+    then
+        echo "Downloaded $(( $CNT - 1 )) database file"
+    else
+        echo "No database files downloaded from device"
+    fi
+}
+
+download_files()
+{
+    mkdir -p $DEST_DIR
+    CNT=1
+
+    export FILE_PATH
+    for dir in $(${ADBW} shell "$SHELL_SU_CMD find ${FILE_PATH}/ -type d" 2>/dev/null)  
+    do
+        DIR_NAME=$(echo $dir | sed -e "s,${FILE_PATH},,g")
+        log "Handling dir # $CNT: ./$DIR_NAME"
+        mkdir -p $DEST_DIR/files/$DIR_NAME
+        CNT=$(( $CNT + 1 ))
+    done
+
+    CNT=1
+    for file in $(${ADBW} shell "$SHELL_SU_CMD find ${FILE_PATH}/ -type f" 2>> $LOG_FILE)  
+    do
+        FILE_NAME=$(basename $file)
+        DIR_NAME=$(dirname $file | sed -e "s,${FILE_PATH},,g")
+        log
+        log "Handling file # $CNT: $FILE_NAME   [$DIR_NAME]"
+        log "========================================================"
+        prepare_dload "$file"
+        dload "${DEST_PATH}/$(basename ${FILE_NAME})"
+        move_file_dest ${FILE_NAME} $DEST_DIR/files/$DIR_NAME
+        CNT=$(( $CNT + 1 ))
+        log
+    done
+
+    if [ $CNT -eq 1 ]
+    then
+        echo "No files found in $FILE_PATH"
+    else
+        echo "Downloaded $(( $CNT - -1 )) files from $FILE_PATH"
+    fi
+
 }
 
 sql()
@@ -557,10 +668,11 @@ end_html()
 
 read_db()
 {
-    echo
-    echo "Reading databases"
-    echo "========================================================"
+    log
+    log "Reading databases"
+    log "========================================================"
 
+    CNT=0
     for db in $(find $DEST_DIR -name "*.db" )
     do
         echo "Database $db:"
@@ -571,7 +683,7 @@ read_db()
         
         for tbl in $(sql ".schema" | grep -v android_metadata | grep "CREATE[ ]*TABLE" | sed -e 's,(, (,g' -e 's,[ ]*IF[ ]*NOT[ ]*EXISTS[ ]*, ,g' -e "s,',,g" |  awk '{ print $3}')
         do
-            echo " * $tbl"
+            log " * $tbl"
             log "Reading from $DB::$tbl"
             echo "<table border=1>  " >> ${db}.html
             echo "<h1>Table: $tbl</h1>" >> ${db}.html
@@ -581,10 +693,16 @@ read_db()
 
             SQL_CMD=".mode ascii\nSELECT * FROM $tbl"
             sql "$SQL_CMD" >> ${db}.txt
-
+            CNT=$(( $CNT + 1 ))
         done
         end_html  ${db}.html
     done
+    if [ $CNT -ne 0 ]
+    then
+        echo "Converted $CNT database files"
+    else
+        echo "No database files read and converted"
+    fi
 }
 
 log "What do I do now?, here's some settings before proceeding:"
@@ -600,13 +718,18 @@ case $MODE in
         download_db
         read_db
         ;;
+    "files")
+        log "Download files"
+        check_app
+        download_files
+        ;;
     "serialized")
         log "Download serialized file"
         check_app
         download_serialized
         read_serialized
         ;;
-    "both")
+    "all")
         log "Download db"
         check_app
         download_db
@@ -615,14 +738,17 @@ case $MODE in
         check_app
         download_serialized
         read_serialized
+        log "Download all files"
+        check_app
+        download_files
         ;;
     *)
         log "no mode set, bailing out"
-        echo " *** ERROR ***"
-        echo "No mode choosen.... Don't know what you want to do."
-        echo ".... Oh no, I am trapped in my own mind."
-        echo ".. Tell me about your mother!"
-        echo " *** ERROR ***"
+        error " *** ERROR ***"
+        error "No mode choosen.... Don't know what you want to do."
+        error ".... Oh no, I am trapped in my own mind."
+        error ".. Tell me about your mother!"
+        error " *** ERROR ***"
         exit 10
         ;;
 esac
